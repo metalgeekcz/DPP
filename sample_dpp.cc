@@ -6,7 +6,7 @@ DPP::DPP( double pData[], int pDim)
    memcpy(mData, pData, pDim*pDim*sizeof(double));
 }
 
-void DPP::eig_decom ( vector<double> & pEigVals, vector< vector<double> > & pEigVecs)
+void DPP::eig_decom ()
 {
   
   //compute eig decomposition 
@@ -39,7 +39,7 @@ void DPP::eig_decom ( vector<double> & pEigVals, vector< vector<double> > & pEig
         gsl_vector_complex_view evec_i 
            = gsl_matrix_complex_column (evec, i);
         
-        pEigVals.push_back(GSL_REAL(eval_i));
+        mEigVals.push_back(GSL_REAL(eval_i));
         
         vector<double> lOneEigVec;
         for (j = 0; j < mDim; ++j)
@@ -49,7 +49,7 @@ void DPP::eig_decom ( vector<double> & pEigVals, vector< vector<double> > & pEig
 
             lOneEigVec.push_back(GSL_REAL(z));
           }
-          pEigVecs.push_back(lOneEigVec);
+         mEigVecs.push_back(lOneEigVec);
       }
   }
 
@@ -59,7 +59,7 @@ void DPP::eig_decom ( vector<double> & pEigVals, vector< vector<double> > & pEig
 }
 
 // the returned samples index from 1
-vector<int> DPP::sample_k(const vector<double> &pEigVals, const int K){
+vector<int> DPP::sample_k( const int K){
 
     // compute the elementary symmetric polyonomials 
     vector<vector<double> > pE; //
@@ -68,7 +68,7 @@ vector<int> DPP::sample_k(const vector<double> &pEigVals, const int K){
     for(int i=0; i<K; i++){
         std::vector<double> onerow(mDim+1, 0.0);
         for(int n=0; n<mDim; n++){
-           onerow[n+1] = onerow[n] + pEigVals[n]*pE[i][n];
+           onerow[n+1] = onerow[n] + mEigVals[n]*pE[i][n];
         }
         pE.push_back(onerow);
     }
@@ -83,7 +83,7 @@ vector<int> DPP::sample_k(const vector<double> &pEigVals, const int K){
         if( remaining == i)
             marg=1.0;
         else
-            marg = pEigVals[i-1] * pE[remaining-1][i-1]/pE[remaining][i];
+            marg = mEigVals[i-1] * pE[remaining-1][i-1]/pE[remaining][i];
         
         srand(time(0));
         double randN= (double)rand()/RAND_MAX;
@@ -96,32 +96,31 @@ vector<int> DPP::sample_k(const vector<double> &pEigVals, const int K){
     return Samples;
 }
 
-vector<int> DPP::sample_dpp(const vector<double> &pEigVals, const vector<vector<double> > & pEigVecs, const int K){
+vector<int> DPP::sample_dpp(const int K){
   
   vector<int> Y(K, 0);
-  int Dim=pEigVals.size();
   //Step 1 select a subseti (k) of eignvectors, where the probability of selecting each eignvector depends on its associated eignvalue
-  vector<int> Samples=sample_k(pEigVals, K);
+  vector<int> Samples=sample_k(K);
   
   vector<vector<double> > V;
   for(int k=0; k<K; k++){
-     V.push_back(pEigVecs[Samples[k]-1]);
+     V.push_back(mEigVecs[Samples[k]-1]);
   }
 
   //step 2: produce samples based on the selected eigen vectors
 
   for (int i=K-1; i>=0; i--){
-    vector<double> P(Dim,0.0);
+    vector<double> P(mDim,0.0);
     double sumP=0.0;
-    for(int dd=0; dd< Dim; dd++){
+    for(int dd=0; dd< mDim; dd++){
         for(int k=0; k<V.size(); k++){
             P[dd]+=pow(V[k][dd] , 2.0);
         }
         sumP+=P[dd];
     }
     
-    vector<double> CumSumP(Dim,0.0);
-    for(int dd=0; dd< Dim; dd++){
+    vector<double> CumSumP(mDim,0.0);
+    for(int dd=0; dd< mDim; dd++){
         P[dd]/=sumP;
         if(dd==0)
             CumSumP[dd]=P[dd];
@@ -131,7 +130,7 @@ vector<int> DPP::sample_dpp(const vector<double> &pEigVals, const vector<vector<
 
     srand(time(0));
     double randI= (double) rand()/RAND_MAX;
-    for(int dd=0; dd< Dim; dd++){
+    for(int dd=0; dd< mDim; dd++){
         if(randI<CumSumP[dd]){
             Y[i]=dd;
             break;
@@ -157,20 +156,20 @@ vector<int> DPP::sample_dpp(const vector<double> &pEigVals, const vector<vector<
      for(int a=0; a< i-1; a++){
          for(int  b= 0; b<a-1; b++){
              double Stmp=0.0; //V(:,a)'*V(:,b)
-             for(int dd=0; dd<Dim; dd++){
+             for(int dd=0; dd<mDim; dd++){
                  Stmp+=V[a][dd]*V[b][dd];
              }
-             for(int dd=0; dd<Dim; dd++){
+             for(int dd=0; dd<mDim; dd++){
                  V[a][dd]-=Stmp*V[b][dd];
              }
 
          }
          double S_norm=0.0;
-         for(int dd=0; dd<Dim; dd++){
+         for(int dd=0; dd<mDim; dd++){
              S_norm+=pow(V[a][dd],2.0);
          }
          S_norm=sqrt(S_norm);
-         for(int dd=0; dd<Dim; dd++){
+         for(int dd=0; dd<mDim; dd++){
              V[a][dd]/=S_norm;
          }
      }

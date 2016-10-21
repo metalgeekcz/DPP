@@ -18,13 +18,11 @@ int main (void)
   int dim=9;
   int K=3;
   DPP myDPP(data, dim); 
-  vector<double> lEigVals;
-  vector<vector<double> > lEigVecs;
-  myDPP.eig_decom (lEigVals, lEigVecs);
+  myDPP.eig_decom ();
 
   //sampling from a DPP
   vector<int> Sample_points;
-  Sample_points=myDPP.sample_dpp(lEigVals, lEigVecs, K);
+  Sample_points=myDPP.sample_dpp(K);
 
   cout<<"Sample_points \n";
   for (int ss=0; ss<Sample_points.size(); ss++){
