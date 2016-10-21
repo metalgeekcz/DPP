@@ -1,17 +1,23 @@
 #include "dpp.h"
 
-void DPP::eig_decom ( double data[], int dim, vector<double> & pEigVals, vector< vector<double> > & pEigVecs)
+DPP::DPP( double pData[], int pDim)
+: mDim(pDim){
+    mData= new double[pDim*pDim];
+   memcpy(mData, pData, pDim*pDim*sizeof(double));
+}
+
+void DPP::eig_decom ( vector<double> & pEigVals, vector< vector<double> > & pEigVecs)
 {
   
   //compute eig decomposition 
   gsl_matrix_view m 
-    = gsl_matrix_view_array (data, dim, dim);
+    = gsl_matrix_view_array (mData, mDim, mDim);
 
-  gsl_vector_complex *eval = gsl_vector_complex_alloc (dim);
-  gsl_matrix_complex *evec = gsl_matrix_complex_alloc (dim, dim);
+  gsl_vector_complex *eval = gsl_vector_complex_alloc (mDim);
+  gsl_matrix_complex *evec = gsl_matrix_complex_alloc (mDim, mDim);
 
   gsl_eigen_nonsymmv_workspace * w = 
-    gsl_eigen_nonsymmv_alloc (dim);
+    gsl_eigen_nonsymmv_alloc (mDim);
   
   gsl_eigen_nonsymmv (&m.matrix, eval, evec, w);
 
@@ -26,7 +32,7 @@ void DPP::eig_decom ( double data[], int dim, vector<double> & pEigVals, vector<
   {
     int i, j;
 
-    for (i = 0; i < dim; i++)
+    for (i = 0; i < mDim; i++)
       {
         gsl_complex eval_i 
            = gsl_vector_complex_get (eval, i);
@@ -36,7 +42,7 @@ void DPP::eig_decom ( double data[], int dim, vector<double> & pEigVals, vector<
         pEigVals.push_back(GSL_REAL(eval_i));
         
         vector<double> lOneEigVec;
-        for (j = 0; j < dim; ++j)
+        for (j = 0; j < mDim; ++j)
           {
             gsl_complex z = 
               gsl_vector_complex_get(&evec_i.vector, j);
@@ -57,12 +63,11 @@ vector<int> DPP::sample_k(const vector<double> &pEigVals, const int K){
 
     // compute the elementary symmetric polyonomials 
     vector<vector<double> > pE; //
-    int dim=pEigVals.size(); 
-    vector<double> firstrow(dim+1, 1.0);
+    vector<double> firstrow(mDim+1, 1.0);
     pE.push_back(firstrow);
     for(int i=0; i<K; i++){
-        std::vector<double> onerow(dim+1, 0.0);
-        for(int n=0; n<dim; n++){
+        std::vector<double> onerow(mDim+1, 0.0);
+        for(int n=0; n<mDim; n++){
            onerow[n+1] = onerow[n] + pEigVals[n]*pE[i][n];
         }
         pE.push_back(onerow);
@@ -70,7 +75,7 @@ vector<int> DPP::sample_k(const vector<double> &pEigVals, const int K){
 
     //iterate 
     int remaining = K;
-    int i=dim;
+    int i=mDim;
     double marg=0.0;
 
     vector<int> Samples(K,0);

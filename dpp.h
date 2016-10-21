@@ -17,10 +17,14 @@ using namespace std;
 
 class DPP{
     public:
-        void eig_decom (double data[], int dim, vector<double> & pEigVals, vector< vector<double> > & pEigVecs);
+        DPP(double pData[], int pDim);
+        void eig_decom (vector<double> & pEigVals, vector< vector<double> > & pEigVecs);
 
         vector<int> sample_k(const vector<double> &pEigVals, const int K);
 
         vector<int> sample_dpp(const vector<double> &pEigVals, const vector<vector<double> > & pEigVecs, const int K);
+     private:
+     double *mData;
+     int mDim;
     
 };

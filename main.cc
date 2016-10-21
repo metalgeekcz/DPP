@@ -17,10 +17,10 @@ int main (void)
    };
   int dim=9;
   int K=3;
-  DPP myDPP; 
+  DPP myDPP(data, dim); 
   vector<double> lEigVals;
   vector<vector<double> > lEigVecs;
-  myDPP.eig_decom (data, dim, lEigVals, lEigVecs);
+  myDPP.eig_decom (lEigVals, lEigVecs);
 
   //sampling from a DPP
   vector<int> Sample_points;
