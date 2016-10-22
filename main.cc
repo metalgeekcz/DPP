@@ -21,14 +21,17 @@ int main (void)
   myDPP.eig_decom ();
 
   //sampling from a DPP
-  vector<int> Sample_points;
-  Sample_points=myDPP.sample_dpp(K);
+  srand(time(0));
+  for(int rr=0; rr<5; rr++){
+      vector<int> Sample_points;
+      Sample_points=myDPP.sample_dpp(K);
 
-  cout<<"Sample_points \n";
-  for (int ss=0; ss<Sample_points.size(); ss++){
-      cout<<Sample_points[ss]<<" ";
+      cout<<"Sample_points \n";
+      for (int ss=0; ss<Sample_points.size(); ss++){
+          cout<<Sample_points[ss]<<" ";
+      }
+      cout<<endl;
   }
-  
   return 0;
 }
 

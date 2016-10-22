@@ -85,7 +85,7 @@ vector<int> DPP::sample_k( const int K){
         else
             marg = mEigVals[i-1] * pE[remaining-1][i-1]/pE[remaining][i];
         
-        srand(time(0));
+     //   srand(time(0));
         double randN= (double)rand()/RAND_MAX;
         if(randN < marg) {
             Samples[remaining-1]=i;
@@ -128,7 +128,7 @@ vector<int> DPP::sample_dpp(const int K){
             CumSumP[dd]=CumSumP[dd-1]+P[dd];
     }
 
-    srand(time(0));
+    //srand(time(0));
     double randI= (double) rand()/RAND_MAX;
     for(int dd=0; dd< mDim; dd++){
         if(randI<CumSumP[dd]){
